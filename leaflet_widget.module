@@ -132,7 +132,75 @@ function leaflet_widget_field_widget_settings_form($field, $instance) {
 function leaflet_widget_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $settings = $instance['widget']['settings'];
 
-  $widget = geofield_get_base_element($element, $items, $delta);
+  // @see
+  // https://github.com/chrsnlsn/leaflet-widget-point/blob/master/leaflet_widget_point.module#L94
+
+  //$widget = geofield_get_base_element($element, $items, $delta);
+  // this function is gone in geofield 2.0 so reproducing what it returned here
+
+  // @TODO: Change this to be generic, so that we don't have poor DX to input as WKT.
+  $element['wkt'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('class' => array('geofield_wkt')),
+    '#default_value' => isset($items[$delta]['wkt']) ? $items[$delta]['wkt'] : NULL,
+  );
+  $element['input_format'] = array(
+    '#type' => 'value',
+    '#attributes' => array('class' => array('geofield_input_format')),
+    '#value' => 'wkt',
+  );
+  $element['geo_type'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('class' => array('geofield_geo_type')),
+    '#default_value' => isset($items[$delta]['geo_type']) ? $items[$delta]['geo_type'] : NULL,
+  );
+  $element['lat'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('class' => array('geofield_lat')),
+    '#default_value' => isset($items[$delta]['lat']) ? $items[$delta]['lat'] : NULL,
+  );
+  $element['lon'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('class' => array('geofield_lon')),
+    '#default_value' => isset($items[$delta]['lon']) ? $items[$delta]['lon'] : NULL,
+  );
+  $element['left'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('class' => array('geofield_left')),
+    '#default_value' => isset($items[$delta]['left']) ? $items[$delta]['left'] : NULL,
+  );
+  $element['right'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('class' => array('geofield_right')),
+    '#default_value' => isset($items[$delta]['right']) ? $items[$delta]['right'] : NULL,
+  );
+  $element['bottom'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('class' => array('geofield_bottom')),
+    '#default_value' => isset($items[$delta]['bottom']) ? $items[$delta]['bottom'] : NULL,
+  );
+  $element['top'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('class' => array('geofield_top')),
+    '#default_value' => isset($items[$delta]['top']) ? $items[$delta]['top'] : NULL,
+  );
+
+  $element['description'] = array(
+    '#markup' => (!empty($element['#description'])) ? '<div class="description">' . $element['#description'] . '</div>' : '',
+  );
+
+  // Master column is used by element-validate to decide which set of columns it should use to compute all other values.
+  // By default, wkt is the master-column, all we compute all other values from it. For other widget (such as lat/lon) this will be different
+  $element['master_column'] = array(
+    '#type' => 'hidden',
+    '#value' => 'wkt',
+  );
+
+  // This validate function computes all other columns from the master field
+  $element['#element_validate'] = array('geofield_element_validate');
+
+  /* END FUNCTION geofield_get_base_element from geofield 1.0 */
+
   $widget['#type'] = 'fieldset';
   // Geofield adds its own description even though #description is available.
   unset($widget['description']);
